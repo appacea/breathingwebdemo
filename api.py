@@ -7,10 +7,11 @@ import calendar
 import time
 import base64
 import traceback
+import eventlet
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+socketio = SocketIO(app,async_mode='eventlet')
 args = {
     "serial":None,
     "baud":None,
@@ -21,11 +22,6 @@ pulse = getCustomPulseApp(args)
 @app.route('/')
 def site():
     return current_app.send_static_file('client.html')
-
-
-@socketio.on('message')
-def handle_message(message):
-    print('received message: ' + message)
 
 
 @socketio.on('frame')
@@ -52,14 +48,7 @@ def handle_frame(b64):
         print(e)
         traceback.print_exc()
 
-        
-@socketio.on('my event')
-def handle_my_custom_event(json):
-    emit('my_response',
-         {'data': 'bugges'})
-    print('received json: ' + str(json))
 
 if __name__ == '__main__':
-  #  socketio.run(app,host='0.0.0.0',port=3001)
     socketio.run(app,host='0.0.0.0')
     app.run()

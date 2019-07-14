@@ -23,39 +23,39 @@ class getCustomPulseApp(object):
     def __init__(self, args):
         # Imaging device - must be a connected camera (not an ip camera or mjpeg
         # stream)
-        serial = args['serial']
-        baud = args['baud']
-        self.send_serial = False
-        self.send_udp = False
-        if serial:
-            self.send_serial = True
-            if not baud:
-                baud = 9600
-            else:
-                baud = int(baud)
-            self.serial = Serial(port=serial, baudrate=baud)
+        # serial = args['serial']
+        # baud = args['baud']
+        # self.send_serial = False
+        # self.send_udp = False
+        # if serial:
+        #     self.send_serial = True
+        #     if not baud:
+        #         baud = 9600
+        #     else:
+        #         baud = int(baud)
+        #     self.serial = Serial(port=serial, baudrate=baud)
 
-        udp = args['udp']
-        if udp:
-            self.send_udp = True
-            if ":" not in udp:
-                ip = udp
-                port = 5005
-            else:
-                ip, port = udp.split(":")
-                port = int(port)
-            self.udp = (ip, port)
-            self.sock = socket.socket(socket.AF_INET, # Internet
-                 socket.SOCK_DGRAM) # UDP
+        # udp = args['udp']
+        # if udp:
+        #     self.send_udp = True
+        #     if ":" not in udp:
+        #         ip = udp
+        #         port = 5005
+        #     else:
+        #         ip, port = udp.split(":")
+        #         port = int(port)
+        #     self.udp = (ip, port)
+        #     self.sock = socket.socket(socket.AF_INET, # Internet
+        #          socket.SOCK_DGRAM) # UDP
 
-        self.cameras = []
-        self.selected_cam = 0
-        for i in range(3):
-            camera = Camera(camera=i)  # first camera by default
-            if camera.valid or not len(self.cameras):
-                self.cameras.append(camera)
-            else:
-                break
+        # self.cameras = []
+        # self.selected_cam = 0
+        # for i in range(3):
+        #     camera = Camera(camera=i)  # first camera by default
+        #     if camera.valid or not len(self.cameras):
+        #         self.cameras.append(camera)
+        #     else:
+        #         break
         self.w, self.h = 0, 0
         self.pressed = 0
         # Containerized analysis of recieved image frames (an openMDAO assembly)
@@ -189,11 +189,11 @@ class getCustomPulseApp(object):
         #if self.bpm_plot:
         self.make_bpm_plot()
 
-        if self.send_serial:
-            self.serial.write(str(self.processor.bpm) + "\r\n")
+        # if self.send_serial:
+        #     self.serial.write(str(self.processor.bpm) + "\r\n")
 
-        if self.send_udp:
-            self.sock.sendto(str(self.processor.bpm), self.udp)
+        # if self.send_udp:
+        #     self.sock.sendto(str(self.processor.bpm), self.udp)
 
         # handle any key presses
         # self.key_handler()
