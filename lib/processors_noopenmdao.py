@@ -24,7 +24,11 @@ class findFaceGetPulse(object):
 
         self.frame_in = np.zeros((10, 10))
         self.frame_out = np.zeros((10, 10))
+
+        #frames per second
         self.fps = 0
+
+        #time alloted for processing time
         self.buffer_size = 250
         #self.window = np.hamming(self.buffer_size)
         self.data_buffer = []
@@ -40,6 +44,9 @@ class findFaceGetPulse(object):
         dpath = resource_path("haarcascade_frontalface_alt.xml")
         if not os.path.exists(dpath):
             print("Cascade file not present!")
+
+        #detects objects in a video stream
+        #uses haarcascade xml file above
         self.face_cascade = cv2.CascadeClassifier(dpath)
 
         self.face_rect = [1, 1, 2, 2]
@@ -68,6 +75,8 @@ class findFaceGetPulse(object):
 
     def draw_rect(self, rect, col=(0, 255, 0)):
         x, y, w, h = rect
+
+        #img, vertex, vertex opposite to pt1, color, thickness
         cv2.rectangle(self.frame_out, (x, y), (x + w, y + h), col, 1)
 
     def get_subface_coord(self, fh_x, fh_y, fh_w, fh_h):
@@ -116,8 +125,13 @@ class findFaceGetPulse(object):
         quit()
 
     def run(self):
+
+        #array of timepoints
         self.times.append(time.time() - self.t0)
         self.frame_out = self.frame_in
+
+        #equalize the histogram of a grayscale image
+        #normlize the histogram so that the sum of histogram is 255
         self.gray = cv2.equalizeHist(cv2.cvtColor(self.frame_in,
                                                   cv2.COLOR_BGR2GRAY))
         col = (100, 255, 100)
@@ -132,6 +146,9 @@ class findFaceGetPulse(object):
     #        cv2.putText(self.frame_out, "Press 'Esc' to quit",
     #                   (10, 75), cv2.FONT_HERSHEY_PLAIN, 1.25, col)
             self.data_buffer, self.times, self.trained = [], [], False
+
+            #detects objects of different sizes in the input image
+            #detected objects are returned as a list of rectangles
             detected = list(self.face_cascade.detectMultiScale(self.gray,
                                                                scaleFactor=1.3,
                                                                minNeighbors=4,
@@ -197,6 +214,8 @@ class findFaceGetPulse(object):
             interpolated = np.interp(even_times, self.times, processed)
             interpolated = np.hamming(L) * interpolated
             interpolated = interpolated - np.mean(interpolated)
+            
+            #one dimensional discrete fourier transform
             raw = np.fft.rfft(interpolated)
             phase = np.angle(raw)
             self.fft = np.abs(raw)
@@ -204,8 +223,14 @@ class findFaceGetPulse(object):
 
             freqs = 60. * self.freqs
             idx = np.where((freqs > 50) & (freqs < 180))
-           # idx -= 1 #YSN 14/07/2019 added minus one here to fix this error: IndexError: index 18 is out of bounds for axis 0 with size 18
+            # idx -= 1 #YSN 14/07/2019 added minus one here to fix this error: IndexError: index 18 is out of bounds for axis 0 with size 18
+            # print(idx)
+            # print(np.array(idx)[0], len(np.array(idx)[0]))
+            # print(np.array(idx)[0] - 1)
+            # print(self.fft)
 
+            #Helps with indices
+            idx = (np.array(idx)[0]) - 1
             pruned = self.fft[idx]
             if pruned.size:
                 phase = phase[idx]
